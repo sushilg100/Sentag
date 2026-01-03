@@ -1,18 +1,13 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-declare var process: {
-  env: {
-    API_KEY: string;
-    [key: string]: string | undefined;
-  };
-};
-
+// Use the designated model as per guidelines for complex reasoning tasks.
 const MODEL_NAME = 'gemini-3-pro-preview';
 
 export class GeminiService {
   
   async getIngestionPreview(reviewText: string) {
+    // Initializing GoogleGenAI instance immediately before the call to ensure latest API key is used.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -33,6 +28,7 @@ Key Keywords:
   }
 
   async analyzeReview(reviewText: string) {
+    // Initializing GoogleGenAI instance immediately before the call to ensure latest API key is used.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
@@ -124,6 +120,7 @@ You are not a reporting tool; you are an advisor helping leaders THINK different
   }
 
   async generateExecutiveReport(dataSummary: string) {
+    // Initializing GoogleGenAI instance immediately before the call to ensure latest API key is used.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
@@ -136,6 +133,7 @@ You are not a reporting tool; you are an advisor helping leaders THINK different
   }
 
   async chatWithData(query: string, dataContext: string) {
+    // Initializing GoogleGenAI instance immediately before the call to ensure latest API key is used.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
@@ -148,7 +146,6 @@ You are not a reporting tool; you are an advisor helping leaders THINK different
   }
 
   private getAdaptiveExecutiveIntelligenceEngineInstruction() {
-     // Re-using the same instruction for chat
      return this.getAdaptiveExecutiveInstruction();
   }
 }
