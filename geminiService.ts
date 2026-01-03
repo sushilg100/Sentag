@@ -1,6 +1,13 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
+declare var process: {
+  env: {
+    API_KEY: string;
+    [key: string]: string | undefined;
+  };
+};
+
 const MODEL_NAME = 'gemini-3-pro-preview';
 
 export class GeminiService {
@@ -134,9 +141,14 @@ You are not a reporting tool; you are an advisor helping leaders THINK different
       model: MODEL_NAME,
       contents: `User Query: ${query}\nData Context: ${dataContext}`,
       config: {
-        systemInstruction: this.getAdaptiveExecutiveInstruction(),
+        systemInstruction: this.getAdaptiveExecutiveIntelligenceEngineInstruction(),
       }
     });
     return response.text || "The requested analysis is currently being synthesized via backup logic.";
+  }
+
+  private getAdaptiveExecutiveIntelligenceEngineInstruction() {
+     // Re-using the same instruction for chat
+     return this.getAdaptiveExecutiveInstruction();
   }
 }
