@@ -7,7 +7,7 @@ import {
   Database, ShieldAlert, ChevronUp, ChevronDown, Loader2, Info, Box, Server, 
   Target, Monitor, Smartphone, Watch, Globe, Home, Eye, Car, CheckCircle2,
   TrendingDown, Minus, BarChart as BarChartIcon, Target as TargetIcon, 
-  ShieldCheck, Clock, Gauge, Binary, PanelLeftClose, PanelLeftOpen
+  ShieldCheck, Clock, Gauge, Binary, PanelLeftClose, PanelLeftOpen, ChevronLeft
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -386,27 +386,37 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen bg-[#0F1115] text-[#F8F9FB] overflow-hidden relative font-sans">
       <aside 
-        className={`${isSidebarCollapsed ? 'w-20' : 'w-72'} bg-[#161A22] border-r border-[#1F242D] flex flex-col shrink-0 px-4 py-8 shadow-2xl z-20 transition-all duration-300 ease-in-out`}
+        className={`${isSidebarCollapsed ? 'w-20' : 'w-72'} bg-[#161A22] border-r border-[#1F242D] flex flex-col shrink-0 px-4 py-8 shadow-2xl z-20 transition-all duration-500 ease-in-out relative group`}
       >
+        {/* Sliding Handle Toggle */}
+        <button 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-12 bg-[#4C5C8A] rounded-full border border-[#1F242D] flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-xl hover:scale-110"
+        >
+          {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+
         <div className="mb-12 px-2 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-9 h-9 bg-[#4C5C8A] flex items-center justify-center rounded-sm rotate-3 shadow-lg shadow-[#4C5C8A]/20 shrink-0">
                 <Layers size={20} className="text-white" />
               </div>
-              {!isSidebarCollapsed && (
-                <span className="font-extrabold text-2xl tracking-tighter text-white uppercase opacity-100 transition-opacity duration-300">SENTAG</span>
-              )}
+              <span className={`font-extrabold text-2xl tracking-tighter text-white uppercase transition-all duration-500 ${isSidebarCollapsed ? 'opacity-0 -translate-x-10 scale-0 w-0 h-0 overflow-hidden' : 'opacity-100'}`}>
+                SENTAG
+              </span>
             </div>
-            <button 
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="text-zinc-500 hover:text-[#4C5C8A] transition-colors p-1"
-            >
-              {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-            </button>
+            {!isSidebarCollapsed && (
+              <button 
+                onClick={() => setIsSidebarCollapsed(true)}
+                className="text-zinc-500 hover:text-white transition-colors"
+              >
+                <PanelLeftClose size={16} />
+              </button>
+            )}
           </div>
           {!isSidebarCollapsed && (
-            <div className="mt-4 flex items-center space-x-2 text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap opacity-100 transition-opacity duration-300">
+            <div className="mt-4 flex items-center space-x-2 text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap opacity-100 transition-opacity duration-700">
               <Activity size={12} className="text-[#3A7D44]" />
               <span>Integrity: High Confidence</span>
             </div>
@@ -423,11 +433,24 @@ const App: React.FC = () => {
           <SidebarItem icon={FileText} label="Executive Insights" tab={Tab.EXECUTIVE} isCollapsed={isSidebarCollapsed} />
           <SidebarItem icon={Cpu} label="AI Terminal" tab={Tab.ASSISTANT} isCollapsed={isSidebarCollapsed} />
         </nav>
+
+        {isSidebarCollapsed && (
+          <div className="mt-auto flex justify-center pb-4">
+            <button onClick={() => setIsSidebarCollapsed(false)} className="text-[#4C5C8A] hover:text-white transition-colors p-2 bg-white/5 rounded-full">
+              <PanelLeftOpen size={20} />
+            </button>
+          </div>
+        )}
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out">
         <header className="h-16 border-b border-[#1F242D] flex items-center justify-between px-10 shrink-0 bg-[#0F1115]/80 backdrop-blur-xl z-10">
           <div className="flex items-center space-x-4">
+             {isSidebarCollapsed && (
+               <button onClick={() => setIsSidebarCollapsed(false)} className="mr-4 text-zinc-500 hover:text-white transition-colors">
+                 <PanelLeftOpen size={18} />
+               </button>
+             )}
              <h1 className="text-xs font-black uppercase tracking-[0.2em] text-[#F8F9FB]">{activeTab}</h1>
              <ChevronRight size={14} className="text-zinc-600" />
              <span className="text-[10px] font-bold text-[#4C5C8A] uppercase tracking-widest">{selectedProduct.name}</span>
