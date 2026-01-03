@@ -7,7 +7,7 @@ import {
   Database, ShieldAlert, ChevronUp, ChevronDown, Loader2, Info, Box, Server, 
   Target, Monitor, Smartphone, Watch, Globe, Home, Eye, Car, CheckCircle2,
   TrendingDown, Minus, BarChart as BarChartIcon, Target as TargetIcon, 
-  ShieldCheck, Clock, Gauge, Binary
+  ShieldCheck, Clock, Gauge, Binary, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -127,6 +127,7 @@ const App: React.FC = () => {
   const [ingestionPreview, setIngestionPreview] = useState<string | null>(null);
   const [enterpriseBreakdown, setEnterpriseBreakdown] = useState<string | null>(null);
   const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   const [batchProgress, setBatchProgress] = useState<{ current: number, total: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -165,18 +166,14 @@ const App: React.FC = () => {
     const avgScore = scores.reduce((acc, s) => acc + s, 0) / totalCount;
     const avgConfidence = activeReviews.reduce((acc, r) => acc + (r.analysis.confidence || 0), 0) / totalCount;
 
-    // Standard Deviation calculation for Signal Variance (σ)
     const squareDiffs = scores.map(s => Math.pow(s - avgScore, 2));
     const variance = squareDiffs.reduce((acc, d) => acc + d, 0) / totalCount;
     const stdDev = Math.sqrt(variance);
 
-    // Algorithmic Weights based on real data characteristics
-    // Higher precision for the Score Engine display
     const sentimentIntensity = Math.max(0, Math.min(100, (pos / totalCount) * 100));
     const volumePrevalence = Math.max(0, Math.min(100, (totalCount / 300) * 100)); 
     const confidenceVariance = Math.max(0, Math.min(100, avgConfidence * 100));
     
-    // Temporal Stability calculation (Recent vs Historic)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const recentReviews = activeReviews.filter(r => new Date(r.timestamp) > thirtyDaysAgo);
@@ -329,17 +326,17 @@ const App: React.FC = () => {
     }, 1000);
   };
 
-  const SidebarItem = ({ icon: Icon, label, tab }: { icon: any, label: string, tab: Tab }) => (
+  const SidebarItem = ({ icon: Icon, label, tab, isCollapsed }: { icon: any, label: string, tab: Tab, isCollapsed: boolean }) => (
     <button 
       onClick={() => setActiveTab(tab)}
-      className={`w-full flex items-center space-x-3 px-6 py-4 transition-all duration-200 rounded-md mb-1 border-l-4 ${
+      className={`w-full flex items-center space-x-3 px-6 py-4 transition-all duration-200 rounded-md mb-1 border-l-4 overflow-hidden whitespace-nowrap ${
         activeTab === tab 
           ? 'bg-[#4C5C8A]/10 text-[#F8F9FB] border-[#4C5C8A] font-semibold' 
           : 'text-[#C7CBD6] hover:text-[#F8F9FB] hover:bg-white/5 border-transparent'
       }`}
     >
-      <Icon size={18} className={activeTab === tab ? 'text-[#4C5C8A]' : 'text-zinc-500'} />
-      <span className="text-[11px] uppercase tracking-[0.15em]">{label}</span>
+      <Icon size={18} className={`shrink-0 ${activeTab === tab ? 'text-[#4C5C8A]' : 'text-zinc-500'}`} />
+      {!isCollapsed && <span className="text-[11px] uppercase tracking-[0.15em] opacity-100 transition-opacity duration-300">{label}</span>}
     </button>
   );
 
@@ -388,29 +385,43 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-[#0F1115] text-[#F8F9FB] overflow-hidden relative font-sans">
-      <aside className="w-72 bg-[#161A22] border-r border-[#1F242D] flex flex-col shrink-0 px-4 py-8 shadow-2xl z-20">
-        <div className="mb-12 px-4 flex flex-col">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 bg-[#4C5C8A] flex items-center justify-center rounded-sm rotate-3 shadow-lg shadow-[#4C5C8A]/20">
-              <Layers size={20} className="text-white" />
+      <aside 
+        className={`${isSidebarCollapsed ? 'w-20' : 'w-72'} bg-[#161A22] border-r border-[#1F242D] flex flex-col shrink-0 px-4 py-8 shadow-2xl z-20 transition-all duration-300 ease-in-out`}
+      >
+        <div className="mb-12 px-2 flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 bg-[#4C5C8A] flex items-center justify-center rounded-sm rotate-3 shadow-lg shadow-[#4C5C8A]/20 shrink-0">
+                <Layers size={20} className="text-white" />
+              </div>
+              {!isSidebarCollapsed && (
+                <span className="font-extrabold text-2xl tracking-tighter text-white uppercase opacity-100 transition-opacity duration-300">SENTAG</span>
+              )}
             </div>
-            <span className="font-extrabold text-2xl tracking-tighter text-white uppercase">SENTAG</span>
+            <button 
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="text-zinc-500 hover:text-[#4C5C8A] transition-colors p-1"
+            >
+              {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            </button>
           </div>
-          <div className="mt-4 flex items-center space-x-2 text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
-            <Activity size={12} className="text-[#3A7D44]" />
-            <span>Integrity: High Confidence</span>
-          </div>
+          {!isSidebarCollapsed && (
+            <div className="mt-4 flex items-center space-x-2 text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap opacity-100 transition-opacity duration-300">
+              <Activity size={12} className="text-[#3A7D44]" />
+              <span>Integrity: High Confidence</span>
+            </div>
+          )}
         </div>
         
         <nav className="flex-1 overflow-y-auto custom-scrollbar">
-          <SidebarItem icon={Info} label="Platform Profile" tab={Tab.SHOWCASE} />
-          <SidebarItem icon={MessageSquare} label="Review Ingestion" tab={Tab.INGESTION} />
-          <SidebarItem icon={PieChart} label="Sentiment Spectrum" tab={Tab.SENTIMENT} />
-          <SidebarItem icon={BarChart3} label="Aspect Matrix" tab={Tab.ASPECTS} />
-          <SidebarItem icon={AlertTriangle} label="Risk Center" tab={Tab.RISKS} />
-          <SidebarItem icon={RefreshCw} label="Score Engine" tab={Tab.SCORE} />
-          <SidebarItem icon={FileText} label="Executive Insights" tab={Tab.EXECUTIVE} />
-          <SidebarItem icon={Cpu} label="AI Terminal" tab={Tab.ASSISTANT} />
+          <SidebarItem icon={Info} label="Platform Profile" tab={Tab.SHOWCASE} isCollapsed={isSidebarCollapsed} />
+          <SidebarItem icon={MessageSquare} label="Review Ingestion" tab={Tab.INGESTION} isCollapsed={isSidebarCollapsed} />
+          <SidebarItem icon={PieChart} label="Sentiment Spectrum" tab={Tab.SENTIMENT} isCollapsed={isSidebarCollapsed} />
+          <SidebarItem icon={BarChart3} label="Aspect Matrix" tab={Tab.ASPECTS} isCollapsed={isSidebarCollapsed} />
+          <SidebarItem icon={AlertTriangle} label="Risk Center" tab={Tab.RISKS} isCollapsed={isSidebarCollapsed} />
+          <SidebarItem icon={RefreshCw} label="Score Engine" tab={Tab.SCORE} isCollapsed={isSidebarCollapsed} />
+          <SidebarItem icon={FileText} label="Executive Insights" tab={Tab.EXECUTIVE} isCollapsed={isSidebarCollapsed} />
+          <SidebarItem icon={Cpu} label="AI Terminal" tab={Tab.ASSISTANT} isCollapsed={isSidebarCollapsed} />
         </nav>
       </aside>
 
@@ -695,7 +706,6 @@ const App: React.FC = () => {
 
           {activeTab === Tab.SCORE && stats && (
             <div className="max-w-7xl mx-auto space-y-12 animate-in zoom-in-95 duration-700 pb-20">
-               {/* Hero SSQ Card */}
                <div className="bg-[#161A22] rounded-[60px] border border-[#1F242D] p-20 shadow-2xl relative overflow-hidden group">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#4C5C8A] to-transparent"></div>
                   
@@ -772,7 +782,6 @@ const App: React.FC = () => {
                   </div>
                </div>
 
-               {/* Detailed Metadata Grid */}
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-[#161A22] p-8 rounded-3xl border border-[#1F242D] space-y-4">
                      <div className="w-10 h-10 bg-[#4C5C8A]/10 flex items-center justify-center rounded-xl text-[#4C5C8A] mb-2"><Gauge size={20} /></div>
@@ -905,8 +914,8 @@ const App: React.FC = () => {
               <h3 className="text-2xl font-black uppercase tracking-widest text-white">Synchronize Context</h3>
               <p className="text-xl text-zinc-400 font-medium leading-relaxed italic">"Initialize global state refresh. Archiving current session vectors. Proceed?"</p>
               <div className="flex space-x-6">
-                 <button onClick={() => setShowRefreshConfirm(false)} className="flex-1 px-10 py-6 border border-[#1F242D] text-zinc-500 font-black uppercase text-[12px] tracking-widest rounded-2xl">Abort</button>
-                 <button onClick={handleGlobalRefresh} className="flex-1 px-10 py-6 bg-[#4C5C8A] text-white font-black uppercase text-[12px] tracking-widest rounded-2xl shadow-2xl">Proceed</button>
+                 <button onClick={() => setShowRefreshConfirm(false)} className="px-10 py-6 border border-[#1F242D] text-zinc-500 font-black uppercase text-[12px] tracking-widest rounded-2xl">Abort</button>
+                 <button onClick={handleGlobalRefresh} className="px-10 py-6 bg-[#4C5C8A] text-white font-black uppercase text-[12px] tracking-widest rounded-2xl shadow-2xl">Proceed</button>
               </div>
            </div>
         </div>
